@@ -70,7 +70,7 @@ function App() {
   }, [isEntered, showMovementSelection]);
 
   // Emotion detection hook (polling every 35 seconds)
-  const { emotion, loading, confidence } = useEmotionDetection(true, 35000);
+  const { emotion, loading, confidence, hasDetected } = useEmotionDetection(true, 35000);
 
   // Handle room transitions
   const handleRoomChange = (newRoom) => {
@@ -164,7 +164,7 @@ function App() {
               </Canvas>
 
               {/* Integrated Adaptive Soundscape System */}
-              {isInsideMuseum && (
+              {hasDetected && (
                 <AdaptiveSoundscapeSystem
                   detectedEmotion={emotion}
                   detectionConfidence={confidence}
