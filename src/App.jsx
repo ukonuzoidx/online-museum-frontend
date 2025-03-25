@@ -164,9 +164,9 @@ function App() {
               </Canvas>
 
               {/* Integrated Adaptive Soundscape System */}
-              {hasDetected && (
+              {isInsideMuseum && (
                 <AdaptiveSoundscapeSystem
-                  detectedEmotion={emotion}
+                  detectedEmotion={hasDetected ? emotion : "Neutral"}
                   detectionConfidence={confidence}
                   currentRoom={currentRoom}
                   isEnabled={true}
