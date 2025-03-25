@@ -22,7 +22,15 @@ const ClassicalArtwork = ({
 
   // Load textures
   const marble = useTexture(marbleTexture);
-  const finalImage = useTexture(imageURL || loadingGif);
+  let finalUrl = loadingGif;
+  if (imageURL && imageURL.startsWith("http")) {
+    finalUrl = `https://corsproxy.io/?url=${encodeURIComponent(
+      imageURL
+    )}`;
+  }
+
+  // If the finalUrl is still invalid, fallback.png will be used
+  const texture = useTexture(finalUrl);
 
   // Configure texture repeats
   marble.wrapS = marble.wrapT = RepeatWrapping;
@@ -53,7 +61,7 @@ const ClassicalArtwork = ({
         {/* Artwork canvas */}
         <Box args={[size[0], size[1], 0.05]} position={[0, 0, 0.132]}>
           <meshStandardMaterial
-            map={finalImage}
+            map={texture}
             color="#fff"
             roughness={0.7}
             // roughness={0.7}

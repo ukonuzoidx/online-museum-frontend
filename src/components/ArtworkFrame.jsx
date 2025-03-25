@@ -24,11 +24,11 @@ const ArtFrame = ({
 
 
 
-  const imageUrl = artwork?.primaryImage || loadingGif;
+  const imageUrl = `https://corsproxy.io/?url=${artwork?.primaryImage}`;
 
   // ✅ Use useTexture to load the actual painting image
   // If there's no image, fallback to a placeholder
-  const texture = useTexture(imageUrl);
+  const texture = useTexture(imageUrl || loadingGif);
   // const texture = useLoader(TextureLoader, imageUrl);
 
   // Handle frame highlighting and information display

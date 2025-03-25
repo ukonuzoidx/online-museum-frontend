@@ -90,14 +90,15 @@ export default function useMetMuseumArtworks(departmentId, query, limit = 10, ha
                 // 1) Search for objectIDs
                 // const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?departmentId=${departmentId}&q=${query}&hasImages=true`;
                 // const searchUrl = `${BASE_URL}/search?departmentId=${departmentId}&q=${query}`;
+                
+                let searchUrl = `${BASE_URL}/search?departmentId=${departmentId}&q=${query}`;
                 if (hasImages) {
-                    query += "&hasImages=true";
+                    searchUrl += "&hasImages=true";
                 }
                 if (isHighlight) {
-                    query += "&isHighlight=true";
+                    searchUrl += "&isHighlight=true";
                 }
-                
-                const searchUrl = `${BASE_URL}/search?departmentId=${departmentId}&q=${query}`;
+                console.log(searchUrl);
                 const searchRes = await fetch(searchUrl);
                 if (!searchRes.ok) {
                     throw new Error(`Search failed: ${searchRes.status}`);
@@ -126,10 +127,7 @@ export default function useMetMuseumArtworks(departmentId, query, limit = 10, ha
                         }
                         const detailData = await detailRes.json();
                         // skip if no primaryImage
-                        if (!detailData.primaryImage) return null;
-
-                        // check if image URL is valid
-                        if (!await isImageOk(detailData.primaryImage)) return null;
+                        if (!detailData.primaryImage || !await isImageOk(detailData.primaryImage)) return null;
 
                         return detailData;
                     } catch (err) {

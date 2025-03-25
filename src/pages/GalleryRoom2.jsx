@@ -122,8 +122,8 @@ function GalleryRoom2({ onDoorClick }) {
   // fetch up to 15 items from dept=5 (Arts of Africa, Oceania, and the Americas)
   const { artworks, loading } = useMetMuseumArtworks(
     5,
-    "sculpture",
-    collections.length + 5,
+    "Sculpture",
+    collections.length + 45,
     true
   );
 
@@ -658,7 +658,8 @@ function GalleryRoom2({ onDoorClick }) {
               medium={art?.medium || "Unknown Medium"}
               objectURL={art?.objectURL}
               // artifactType={item.artifactType}
-              imageUrl={art?.primaryImage} // pass real Met image
+              // imageUrl={art?.primaryImage} 
+              artwork={art}
             />
           );
         })}

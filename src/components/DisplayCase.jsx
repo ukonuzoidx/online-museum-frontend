@@ -19,7 +19,8 @@ const DisplayCase = ({
   medium,
   objectURL,
   // artifactType,
-  imageUrl,
+  // imageUrl,
+  artwork
 }) => {
   const [hovered, setHovered] = React.useState(false);
   const [viewed, setViewed] = React.useState(false);
@@ -27,10 +28,22 @@ const DisplayCase = ({
 
   const fallback = noImageS;
 
-  const finalUrl = imageUrl || fallback;
+  // const finalUrl = 
+  //   `https://corsproxy.io/?url=${artwork?.primaryImage}`;
 
-  // Always call useTexture (avoid conditional hook calls)
+  // // Always call useTexture (avoid conditional hook calls)
+  // const texture = useTexture(finalUrl || fallback);
+  
+  let finalUrl = fallback;
+  if (artwork?.primaryImage && artwork.primaryImage.startsWith("http")) {
+    finalUrl = `https://corsproxy.io/?url=${encodeURIComponent(
+      artwork.primaryImage
+    )}`;
+  }
+
+  // If the finalUrl is still invalid, fallback.png will be used
   const texture = useTexture(finalUrl);
+
 
   // Rotate the artifact slowly
   useFrame(({ clock }) => {

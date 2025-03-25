@@ -112,8 +112,8 @@ function GalleryRoom1({ onDoorClick }) {
   // Suppose we want European Paintings:
   const { artworks, loading, error } = useMetMuseumArtworks(
     11,
-    "painting",
-    20
+    "paintings",
+    20,
     // exhibits.length
   );
 
