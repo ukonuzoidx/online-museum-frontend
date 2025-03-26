@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import MuseumMusicPlayer from "../widgets/MusicPlayer";
 import MoodMonitorPanel from "./MoodMonitorPanel";
+import WebcamPermissionNotice from "../widgets/WebPermissionNotice";
 const AdaptiveSoundscapeSystem = ({
   detectedEmotion,
   detectionConfidence,
   currentRoom,
   isEnabled = true,
+  permissionGranted,
 }) => {
   // Soundscape state
   const [stableEmotion, setStableEmotion] = useState("Neutral");
@@ -90,7 +92,7 @@ const AdaptiveSoundscapeSystem = ({
       },
       Gallery1: {
         defaultMode: "immersive",
-        volumeAdjustment: 0,
+        volumeAdjustment: 0.1,
       },
       Gallery2: {
         defaultMode: "relaxed",
@@ -133,6 +135,31 @@ const AdaptiveSoundscapeSystem = ({
         mode={musicMode}
         onModeChange={handleMusicModeChange}
       />
+      {/* <WebcamPermissionNotice /> */}
+      {/* {!permissionGranted && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "#ff4d4d",
+            color: "white",
+            padding: "12px 18px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+            zIndex: 3000,
+            fontSize: "14px",
+            maxWidth: "90%",
+            textAlign: "center",
+          }}
+        >
+          📷 <strong>Webcam access required</strong>
+          <br />
+          Please enable your webcam to let us detect your emotions and tailor
+          the museum's music to your mood!
+        </div>
+      )} */}
 
       <MoodMonitorPanel
         emotionHistory={emotionHistory}

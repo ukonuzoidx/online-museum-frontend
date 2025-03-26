@@ -15,6 +15,7 @@ import {
 import AdaptiveSoundscapeSystem from "./components/AdaptiveSoundscapeSystem";
 import MobileControls from "./widgets/MobileControls";
 import MobileJoystickOverlay from "./utils/MobileControlOverlay";
+import WebcamPermissionNotice from "./widgets/WebPermissionNotice";
 
 // Loading Screen
 function LoadingScreen() {
@@ -69,8 +70,8 @@ function App() {
     }
   }, [isEntered, showMovementSelection]);
 
-  // Emotion detection hook (polling every 35 seconds)
-  const { emotion, loading, confidence, hasDetected } = useEmotionDetection(true, 35000);
+  // Emotion detection hook (polling every 15 seconds)
+  const { emotion, loading, permissionGranted, confidence, hasDetected, triggerDetection } = useEmotionDetection(true, 15000);
 
   // Handle room transitions
   const handleRoomChange = (newRoom) => {
@@ -165,12 +166,16 @@ function App() {
 
               {/* Integrated Adaptive Soundscape System */}
               {isInsideMuseum && (
-                <AdaptiveSoundscapeSystem
-                  detectedEmotion={hasDetected ? emotion : "Neutral"}
-                  detectionConfidence={confidence}
-                  currentRoom={currentRoom}
-                  isEnabled={true}
-                />
+                <>
+                  <WebcamPermissionNotice permissionGranted={triggerDetection} />
+                  <AdaptiveSoundscapeSystem
+                    detectedEmotion={hasDetected ? emotion : "Neutral"}
+                    detectionConfidence={confidence}
+                    currentRoom={currentRoom}
+                    isEnabled={true}
+                    permissionGranted={permissionGranted}
+                  />
+                </>
               )}
 
               {movementMode === "mobile" && (
