@@ -400,6 +400,7 @@ const MuseumMusicPlayer = ({
           performCrossfade(newTrack);
         }
       }
+
     }
   }, [
     detectedEmotion,
@@ -410,6 +411,7 @@ const MuseumMusicPlayer = ({
     performCrossfade,
   ]);
 
+  
   // Handle pending track changes when playback becomes available
   useEffect(() => {
     if (

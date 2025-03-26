@@ -9,7 +9,42 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const MoodMonitorPanel = ({ emotionHistory, stableEmotion }) => {
+const logEmotionToGoogleSheet = async ({
+  emotion,
+  confidence,
+  room,
+  device,
+}) => {
+  try {
+    await fetch(
+      "https://script.google.com/macros/s/AKfycbzz74ZGYjDh1HBWPYqLFZGdaBSmCn8eUJKLaLXR29WUO84sQnH0ViVcwq1abQfnaML9uA/exec",
+      {
+        method: "POST",
+        mode: "no-cors", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // You MUST include all data in JSON string format
+        body: JSON.stringify({
+          emotion,
+          confidence,
+          room,
+          device,
+        }),
+      }
+    );
+    console.log("✅ Emotion logged to Google Sheet");
+  } catch (err) {
+    console.error("❌ Failed to log emotion:", err);
+  }
+};
+
+const MoodMonitorPanel = ({
+  emotionHistory,
+  stableEmotion,
+  confidence,
+  currentRoom,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [chartData, setChartData] = useState([]);
   const timeSeriesRef = useRef([]);
@@ -45,6 +80,16 @@ const MoodMonitorPanel = ({ emotionHistory, stableEmotion }) => {
         emotion: emotionHistory[emotionHistory.length - 1],
         value: emotionValueMap[emotionHistory[emotionHistory.length - 1]] || 3,
       };
+
+      // save the latest emotion to google sheet
+      logEmotionToGoogleSheet({
+        emotion: newEntry.emotion,
+        confidence: confidence,
+        room: currentRoom,
+        device: /Mobi|Android/i.test(navigator.userAgent)
+          ? "Mobile"
+          : "Desktop",
+      });
 
       // Update our time series data (keep last 30 entries)
       timeSeriesRef.current = [...timeSeriesRef.current, newEntry].slice(-30);

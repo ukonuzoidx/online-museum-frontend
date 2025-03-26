@@ -164,6 +164,7 @@ const AdaptiveSoundscapeSystem = ({
       <MoodMonitorPanel
         emotionHistory={emotionHistory}
         stableEmotion={stableEmotion}
+        confidence={detectionConfidence}
         currentRoom={currentRoom}
       />
     </>

@@ -13,12 +13,12 @@ const WebcamPermissionNotice = ({ onPermissionGranted }) => {
   }, []);
 
   // Auto-dismiss after 60 seconds if permission is not granted
-  useEffect(() => {
-    if (showNotice) {
-      const timer = setTimeout(() => setShowNotice(false), 60000);
-      return () => clearTimeout(timer);
-    }
-  }, [showNotice]);
+  // useEffect(() => {
+  //   if (showNotice) {
+  //     const timer = setTimeout(() => setShowNotice(false), 60000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [showNotice]);
 
   const requestWebcam = async () => {
     try {
