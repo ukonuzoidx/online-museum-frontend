@@ -16,6 +16,7 @@ import AdaptiveSoundscapeSystem from "./components/AdaptiveSoundscapeSystem";
 import MobileControls from "./widgets/MobileControls";
 import MobileJoystickOverlay from "./utils/MobileControlOverlay";
 import WebcamPermissionNotice from "./widgets/WebPermissionNotice";
+import ExpressionRecorderOverlay from "./utils/EmotionOverlay";
 
 // Loading Screen
 function LoadingScreen() {
@@ -44,7 +45,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [movementMode, setMovementMode] = useState(null); // "desktop" | "mobile"
   const [showMovementSelection, setShowMovementSelection] = useState(false);
-
+  const [showRecorder, setShowRecorder] = useState(false);
+  
   // Create joystick refs and handlers
   const { moveRef, lookRef } = useMemo(() => createJoystickRefs(), []);
   const movementHandlers = useMemo(
@@ -99,6 +101,22 @@ function App() {
     setIsEntered(true);
     setIsInsideMuseum(true);
     setShowMovementSelection(true);
+    // setShowRecorder(true);
+  };
+  
+  // emotion overlay
+  const handleStartRecording = () => {
+    setShowRecorder(true);
+    triggerDetection();
+  };
+
+  const handleCancelRecording = () => {
+    setShowRecorder(false);
+  };
+
+  const handleCompleteRecording = () => {
+    setShowRecorder(false);
+    triggerDetection(); // only start capture after countdown
   };
 
   // Simulate initial loading
@@ -167,7 +185,9 @@ function App() {
               {/* Integrated Adaptive Soundscape System */}
               {isInsideMuseum && (
                 <>
-                  <WebcamPermissionNotice permissionGranted={triggerDetection} />
+                  <WebcamPermissionNotice
+                    permissionGranted={handleStartRecording}
+                  />
                   <AdaptiveSoundscapeSystem
                     detectedEmotion={hasDetected ? emotion : "Neutral"}
                     detectionConfidence={confidence}
@@ -176,6 +196,12 @@ function App() {
                     permissionGranted={permissionGranted}
                   />
                 </>
+              )}
+              {showRecorder && (
+                <ExpressionRecorderOverlay
+                  onComplete={handleCompleteRecording}
+                  onCancel={handleCancelRecording}
+                />
               )}
 
               {movementMode === "mobile" && (

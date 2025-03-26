@@ -71,7 +71,9 @@ const useEmotionDetection = (start = true, delay = 35000) => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
-      await new Promise((r) => setTimeout(r, 300));
+      //   await new Promise((r) => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 10000));
+
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       const blob = await new Promise((resolve) => {
@@ -82,7 +84,7 @@ const useEmotionDetection = (start = true, delay = 35000) => {
 
       const formData = new FormData();
       formData.append("file", blob, "webcam-capture.jpg");
-      formData.append("model_name", "CNN");
+      formData.append("model_name", "VGG19");
 
       const response = await axios.post(
         "https://ukonuzoidx-musemind.hf.space/api/predict-emotion/",
