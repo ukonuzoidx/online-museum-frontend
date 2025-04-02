@@ -12,7 +12,7 @@ import ArtFrame from "../components/ArtworkFrame";
 import { Box, Cylinder, Text } from "@react-three/drei";
 
 
-function GalleryRoom1({ onDoorClick }) {
+function GalleryRoom1({ onDoorClick, artworks, loading }) {
   // References for animations or effects
   const skylightRef = useRef();
   const lightBeamRef = useRef();
@@ -110,12 +110,12 @@ function GalleryRoom1({ onDoorClick }) {
   // );
 
   // Suppose we want European Paintings:
-  const { artworks, loading, error } = useMetMuseumArtworks(
-    11,
-    "paintings",
-    20,
-    // exhibits.length
-  );
+  // const { artworks, loading, error } = useMetMuseumArtworks(
+  //   11,
+  //   "paintings",
+  //   20,
+  //   // exhibits.length
+  // );
 
   const validArtworks = artworks.slice(0, exhibits.length);
 

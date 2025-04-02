@@ -7,7 +7,7 @@ import floor2 from "../assets/textures/floor-2.png";
 import useMetMuseumArtworks from "../hooks/useMuseumHook";
 import DisplayCase from "../components/DisplayCase";
 
-function GalleryRoom2({ onDoorClick }) {
+function GalleryRoom2({ onDoorClick, artworks, loading }) {
   // References for animations or effects
   const chandelierRef = useRef();
 
@@ -120,12 +120,12 @@ function GalleryRoom2({ onDoorClick }) {
   ];
 
   // fetch up to 15 items from dept=5 (Arts of Africa, Oceania, and the Americas)
-  const { artworks, loading } = useMetMuseumArtworks(
-    5,
-    "Sculpture",
-    collections.length + 45,
-    true
-  );
+  // const { artworks, loading } = useMetMuseumArtworks(
+  //   5,
+  //   "Sculpture",
+  //   collections.length + 45,
+  //   true
+  // );
 
   const validArtworks = artworks.slice(0, collections.length);
 

@@ -12,7 +12,7 @@ import loadingGif from "../assets/loading.gif";
 import ClassicalArtwork from "../components/ClassicFrame";
 
 
-function GalleryRoom3({ onDoorClick }) {
+function GalleryRoom3({ onDoorClick, artworks, loading }) {
   // References for lighting and animations
   const ambientLightRef = useRef();
   const skylightRef = useRef();
@@ -241,12 +241,12 @@ function GalleryRoom3({ onDoorClick }) {
     },
   ];
 
-  const { artworks, loading } = useMetMuseumArtworks(
-    9,
-    "Portrait",
-    paintings.length + 5,
-    true
-  );
+  // const { artworks, loading } = useMetMuseumArtworks(
+  //   9,
+  //   "Portrait",
+  //   paintings.length + 5,
+  //   true
+  // );
 
   const validArtworks = artworks.slice(0, paintings.length);
 

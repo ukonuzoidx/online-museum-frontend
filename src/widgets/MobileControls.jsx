@@ -1,4 +1,3 @@
-// MobileControls.jsx
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
@@ -53,9 +52,23 @@ function MobileControls({ currentRoom, moveRef, lookRef }) {
     const move = moveRef.current;
     const look = lookRef.current;
 
-    // Debug joystick status
-    if (look.active || move.active) {
-      console.log("Move:", move.x, move.y, "Look:", look.dx, look.dy);
+    // Debug joystick status - only log when values actually change to reduce spam
+    const moveActive =
+      move.active && (Math.abs(move.x) > 0.01 || Math.abs(move.y) > 0.01);
+    const lookActive =
+      look.active && (Math.abs(look.dx) > 0.01 || Math.abs(look.dy) > 0.01);
+
+    if (moveActive || lookActive) {
+      console.log(
+        "Move:",
+        moveActive
+          ? `x:${move.x.toFixed(2)} y:${move.y.toFixed(2)}`
+          : "inactive",
+        "Look:",
+        lookActive
+          ? `dx:${look.dx.toFixed(2)} dy:${look.dy.toFixed(2)}`
+          : "inactive"
+      );
     }
 
     // Handle camera rotation from look joystick

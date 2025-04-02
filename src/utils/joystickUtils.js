@@ -1,4 +1,4 @@
-// joystickUtils.js
+
 export const createJoystickRefs = () => ({
     moveRef: {
         current: { x: 0, y: 0, startX: 0, startY: 0, active: false },
@@ -11,43 +11,52 @@ export const createJoystickRefs = () => ({
 // 🎮 Movement touch handlers
 export const createMovementHandlers = (moveRef) => ({
     onMoveStart: (e) => {
-        const touch = e.touches[0];
-        const rect = e.currentTarget.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        moveRef.current.startX = centerX;
-        moveRef.current.startY = centerY;
         moveRef.current.active = true;
 
-        // Calculate initial position
-        const dx = touch.clientX - centerX;
-        const dy = touch.clientY - centerY;
-        const maxDistance = 50;
+        // Use joystick values if provided
+        if (e.joystickX !== undefined && e.joystickY !== undefined) {
+            moveRef.current.x = e.joystickX;
+            moveRef.current.y = e.joystickY;
+        } else {
+            // Fallback to old calculation
+            const touch = e.touches[0];
+            const rect = e.currentTarget.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
 
-        moveRef.current.x = Math.max(-1, Math.min(1, dx / maxDistance));
-        moveRef.current.y = Math.max(-1, Math.min(1, dy / maxDistance));
+            moveRef.current.startX = centerX;
+            moveRef.current.startY = centerY;
 
-        console.log("Move start:", moveRef.current);
+            // Calculate normalized values
+            const dx = touch.clientX - centerX;
+            const dy = touch.clientY - centerY;
+            const maxDistance = 50;
+
+            moveRef.current.x = Math.max(-1, Math.min(1, dx / maxDistance));
+            moveRef.current.y = Math.max(-1, Math.min(1, dy / maxDistance));
+        }
     },
 
     onMove: (e) => {
         if (!moveRef.current.active) return;
 
-        const touch = e.touches[0];
-        const dx = touch.clientX - moveRef.current.startX;
-        const dy = touch.clientY - moveRef.current.startY;
-        const maxDistance = 50;
+        // Use joystick values if provided
+        if (e.joystickX !== undefined && e.joystickY !== undefined) {
+            moveRef.current.x = e.joystickX;
+            moveRef.current.y = e.joystickY;
+        } else {
+            // Fallback
+            const touch = e.touches[0];
+            const dx = touch.clientX - moveRef.current.startX;
+            const dy = touch.clientY - moveRef.current.startY;
+            const maxDistance = 50;
 
-        // Normalize values to -1 to 1 range
-        moveRef.current.x = Math.max(-1, Math.min(1, dx / maxDistance));
-        moveRef.current.y = Math.max(-1, Math.min(1, dy / maxDistance));
-
-        console.log("Move update:", moveRef.current.x, moveRef.current.y);
+            moveRef.current.x = Math.max(-1, Math.min(1, dx / maxDistance));
+            moveRef.current.y = Math.max(-1, Math.min(1, dy / maxDistance));
+        }
     },
 
     onMoveEnd: () => {
-        console.log("Move end");
         moveRef.current.x = 0;
         moveRef.current.y = 0;
         moveRef.current.active = false;
@@ -81,8 +90,6 @@ export const createLookHandlers = (lookRef) => ({
         // Update last position
         lookRef.current.lastX = touch.clientX;
         lookRef.current.lastY = touch.clientY;
-
-        console.log("Look update:", dx, dy);
     },
 
     onLookEnd: () => {
@@ -117,7 +124,7 @@ export const updateVisualJoystick = (touchEvent, baseRef, thumbRef, maxRadius = 
         deltaY *= ratio;
     }
 
-    // Update thumb position
+    // Update thumb position with proper transform
     thumbRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
 
     // Return normalized values (-1 to 1)
@@ -129,6 +136,7 @@ export const updateVisualJoystick = (touchEvent, baseRef, thumbRef, maxRadius = 
 
 export const resetVisualJoystick = (thumbRef) => {
     if (thumbRef.current) {
+        // Important: This fixes the visual reset issue!
         thumbRef.current.style.transform = 'translate(0px, 0px)';
     }
 };

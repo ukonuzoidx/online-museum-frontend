@@ -71,95 +71,63 @@ async function isImageOk(url) {
     }
 }
 
+const fetchArtworksForDepartment = async (
+    departmentId,
+    query,
+    limit,
+    hasImages = false
+) => {
+    const BASE_URL = "https://collectionapi.metmuseum.org/public/collection/v1";
 
-const BASE_URL = 'https://collectionapi.metmuseum.org/public/collection/v1';
+    // 1. Search for objectIDs
+    // const searchUrl = `${BASE_URL}/search?departmentId=${departmentId}&q=${query}&hasImages=${hasImages}`;
+    let searchUrl = `${BASE_URL}/search?departmentId=${departmentId}&q=${query}`;
+    if (hasImages) {
+        searchUrl += "&hasImages=true";
+    }
+    const searchRes = await fetch(searchUrl);
+    if (!searchRes.ok) {
+        throw new Error(`Search failed: ${searchRes.status}`);
+    }
+    const searchData = await searchRes.json();
 
-export default function useMetMuseumArtworks(departmentId, query, limit = 10, hasImages = false, isHighlight = false) {
-    const [artworks, setArtworks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    if (!searchData.objectIDs || searchData.objectIDs.length === 0) {
+        return [];
+    }
 
-    useEffect(() => {
-        let isMounted = true;
-        setLoading(true);
-        setError("");
-        setArtworks([]);
+    // 2. Limit how many objectIDs we want
+    const objectIDs = searchData.objectIDs.slice(0, limit);
 
-        (async () => {
-            try {
-                // 1) Search for objectIDs
-                // const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?departmentId=${departmentId}&q=${query}&hasImages=true`;
-                // const searchUrl = `${BASE_URL}/search?departmentId=${departmentId}&q=${query}`;
-                
-                let searchUrl = `${BASE_URL}/search?departmentId=${departmentId}&q=${query}`;
-                if (hasImages) {
-                    searchUrl += "&hasImages=true";
-                }
-                if (isHighlight) {
-                    searchUrl += "&isHighlight=true";
-                }
-                console.log(searchUrl);
-                const searchRes = await fetch(searchUrl);
-                if (!searchRes.ok) {
-                    throw new Error(`Search failed: ${searchRes.status}`);
-                }
-                const searchData = await searchRes.json();
-
-                if (!searchData.objectIDs || searchData.objectIDs.length === 0) {
-                    if (isMounted) {
-                        setError("No results found");
-                        setLoading(false);
-                    }
-                    return;
-                }
-
-                // 2) Limit how many objectIDs we want
-                const objectIDs = searchData.objectIDs.slice(0, limit);
-
-                // 3) Fetch details concurrently
-                const detailPromises = objectIDs.map(async (id) => {
-                    try {
-                        const detailUrl = `${BASE_URL}/objects/${id}`;
-                        const detailRes = await fetch(detailUrl);
-                        if (!detailRes.ok) {
-                            // e.g. 404
-                            return null; // skip
-                        }
-                        const detailData = await detailRes.json();
-                        // skip if no primaryImage
-                        if (!detailData.primaryImage || !await isImageOk(detailData.primaryImage)) return null;
-
-                        return detailData;
-                    } catch (err) {
-                        return null; // skip on error
-                    }
-                });
-
-                const details = await Promise.all(detailPromises);
-                // 4) filter out null or incomplete
-                const validArtworks = details.filter(Boolean);
-
-                if (isMounted) {
-                    setArtworks(validArtworks);
-                    setLoading(false);
-                }
-            } catch (err) {
-                console.error("useMetMuseumArtworks error:", err);
-                if (isMounted) {
-                    setError(err.message);
-                    setLoading(false);
-                }
+    // 3. Fetch details concurrently
+    const detailPromises = objectIDs.map(async (id) => {
+        try {
+            const detailUrl = `${BASE_URL}/objects/${id}`;
+            const detailRes = await fetch(detailUrl);
+            if (!detailRes.ok) {
+                return null; // skip
             }
-        })();
+            const detailData = await detailRes.json();
+            // if (!detailData.primaryImage) return null;
+            // skip if no primaryImage
+            if (
+                !detailData.primaryImage ||
+                !(await isImageOk(detailData.primaryImage))
+            )
+                return null;
 
-        return () => {
-            isMounted = false;
-        };
-    }, [departmentId, query, limit]);
+            return detailData;
+        } catch (err) {
+            return null; // skip on error
+        }
+    });
 
-    return { artworks, loading, error };
-}
+    const details = await Promise.all(detailPromises);
+    return details.filter(Boolean);
+};
 
+
+
+export default fetchArtworksForDepartment;
 
 // import { is } from "@react-three/fiber/dist/declarations/src/core/utils";
 // import { useState, useEffect } from "react";

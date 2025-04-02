@@ -147,7 +147,7 @@ const MoodMonitorPanel = ({
       className="mood-monitor-panel"
       style={{
         position: "fixed",
-        top: "20px",
+        bottom: "200px",
         right: "20px",
         backgroundColor: "rgba(0,0,0,0.7)",
         borderRadius: "8px",
