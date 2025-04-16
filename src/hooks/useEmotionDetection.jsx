@@ -405,11 +405,11 @@
 
 // export default useEmotionDetection;
 
-
 import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 
-const useEmotionDetection = (start = true, delay = 60000) => { // 60 second delay between checks
+const useEmotionDetection = (start = true, delay = 60000) => {
+  // 60 second delay between checks
   // State management
   const [emotion, setEmotion] = useState("Neutral");
   const [loading, setLoading] = useState(false);
@@ -419,50 +419,58 @@ const useEmotionDetection = (start = true, delay = 60000) => { // 60 second dela
   const [error, setError] = useState(null);
   const [hasDetected, setHasDetected] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
-  
+
   // Track permission and detection state
   const permissionChecked = useRef(false);
   const permissionInProgress = useRef(false);
   const detectionInterval = useRef(null);
   const isCapturingRef = useRef(false);
   const lastDetectionTime = useRef(0);
-  
+
   // Track video stream for cleanup
   const activeStreamRef = useRef(null);
 
-  // Console logging for debugging
-  const logInfo = (message) => {
+  // Console logging for debugging - moved outside useCallback dependencies
+  const logInfoRef = useRef((message) => {
     console.log(`[EmotionDetection] ${message}`);
-
-  };
+  });
 
   // Helper to check if mediaDevices API is available
   const isCameraApiAvailable = useCallback(() => {
-    return !!(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    return !!(
+      navigator &&
+      navigator.mediaDevices &&
+      navigator.mediaDevices.getUserMedia
+    );
   }, []);
-  
+
   // Cleanup function for webcam resources
   const cleanupVideoResources = useCallback(() => {
     if (activeStreamRef.current) {
-      logInfo("Cleaning up video resources");
+      logInfoRef.current("Cleaning up video resources");
       try {
-        activeStreamRef.current.getTracks().forEach(track => {
+        activeStreamRef.current.getTracks().forEach((track) => {
           track.stop();
         });
       } catch (e) {
-        // Ignore errors during cleanup
+
+        logInfoRef.current(`Error cleaning up stream: ${e.message}`);
       }
       activeStreamRef.current = null;
     }
 
-    const videoEl = document.querySelector("video[playsinline]");
-    if (videoEl && document.body.contains(videoEl)) {
-      try {
-        document.body.removeChild(videoEl);
-      } catch (e) {
-        // Ignore errors during cleanup
+    // Improved selector to find all potential video elements we've created
+    const videoElements = document.querySelectorAll("video[playsinline]");
+    videoElements.forEach((videoEl) => {
+      if (document.body.contains(videoEl)) {
+        try {
+          document.body.removeChild(videoEl);
+        } catch (e) {
+  
+          logInfoRef.current(`Error cleaning up video: ${e.message}`);
+        }
       }
-    }
+    });
   }, []);
 
   // Listen for user interaction
@@ -470,7 +478,7 @@ const useEmotionDetection = (start = true, delay = 60000) => { // 60 second dela
     const handleInteraction = () => {
       if (!userInteracted) {
         setUserInteracted(true);
-        logInfo("User interaction detected");
+        logInfoRef.current("User interaction detected");
       }
     };
 
@@ -483,38 +491,43 @@ const useEmotionDetection = (start = true, delay = 60000) => { // 60 second dela
     };
   }, [userInteracted]);
 
-  // Check camera permission only once
-  useEffect(() => {
-    // Only run this check once
-    if (permissionChecked.current || permissionInProgress.current) return;
-    
-    const checkCameraPermission = async () => {
+  // Check camera permission when needed
+  // FIX: Added ability to recheck permissions if needed
+  const checkCameraPermission = useCallback(
+    async (force = false) => {
+      // Skip if already in progress
+      if (permissionInProgress.current) return;
+
+      // Skip if already checked and not forcing
+      if (permissionChecked.current && !force) return;
+
       // Skip if the API isn't available
       if (!isCameraApiAvailable()) {
-        logInfo("Camera API not available in this environment");
+        logInfoRef.current("Camera API not available in this environment");
         setPermissionDenied(true);
         setError("Camera access not supported in this browser");
         permissionChecked.current = true;
         return;
       }
-      
+
       try {
         permissionInProgress.current = true;
-        logInfo("Checking camera permission...");
-        
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: "user" } 
+        logInfoRef.current("Checking camera permission...");
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" },
         });
-        
+
         // Successfully got permission
         setPermissionGranted(true);
         setPermissionDenied(false);
-        
+        setError(null); // Clear any previous errors
+
         // Clean up the test stream
-        stream.getTracks().forEach(track => track.stop());
-        logInfo("Camera permission granted");
+        stream.getTracks().forEach((track) => track.stop());
+        logInfoRef.current("Camera permission granted");
       } catch (err) {
-        logInfo(`Camera permission denied: ${err.message}`);
+        logInfoRef.current(`Camera permission denied: ${err.message}`);
         setPermissionGranted(false);
         setPermissionDenied(true);
         setError("Camera access denied by browser or user");
@@ -522,235 +535,370 @@ const useEmotionDetection = (start = true, delay = 60000) => { // 60 second dela
         permissionChecked.current = true;
         permissionInProgress.current = false;
       }
-    };
-    
-    // Only run the check if user has interacted and we're supposed to start
+    },
+    [isCameraApiAvailable]
+  );
+
+  // Trigger permission check when conditions are right
+  useEffect(() => {
     if (userInteracted && start) {
       checkCameraPermission();
     }
-  }, [userInteracted, start, isCameraApiAvailable]);
+  }, [userInteracted, start, checkCameraPermission]);
 
-  // Capture and analyze function with no retries for low confidence
-  const captureAndAnalyze = useCallback(async (forceCapture = false) => {
-    // Skip if permissions denied or already capturing
-    if (permissionDenied || isCapturingRef.current) {
-      return;
-    }
-    
-    // Skip if no user interaction yet
-    if (!userInteracted) {
-      logInfo("User hasn't interacted yet, can't access camera");
-      return;
-    }
-    
-    // Skip if camera API not available
-    if (!isCameraApiAvailable()) {
-      logInfo("Camera API not available");
-      setPermissionDenied(true);
-      return;
-    }
-    
-    // Implement rate limiting to prevent spam
-    const now = Date.now();
-    const timeSinceLastCapture = now - lastDetectionTime.current;
-    
-    // Only allow a capture if it's been long enough since the last one,
-    // or if this is a forced capture
-    if (!forceCapture && timeSinceLastCapture < 30000) {
-      logInfo(`Rate limiting: Not capturing (last capture was ${Math.round(timeSinceLastCapture/1000)}s ago)`);
-      return;
-    }
-    
-    // Mark as capturing to prevent parallel attempts
-    isCapturingRef.current = true;
-    setLoading(true);
-    lastDetectionTime.current = now;
-    
-    try {
-      logInfo("Starting emotion capture");
-      
-      // Request camera access
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "user",
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        }
-      });
-      
-      // Store the stream for later cleanup
-      activeStreamRef.current = stream;
-      setPermissionGranted(true);
-      
-      // Create and set up video element
-      const video = document.createElement("video");
-      video.setAttribute("playsinline", ""); // Important for iOS
-      video.srcObject = stream;
-      video.style.position = "absolute";
-      video.style.left = "-9999px";
-      document.body.appendChild(video);
-      
-      // Wait for the video to be ready
-      await new Promise((resolve, reject) => {
-        video.onloadedmetadata = () => {
-          video.play().then(resolve).catch(reject);
-        };
-        
-        // Add a timeout in case the video never loads
-        setTimeout(() => reject(new Error("Video load timeout")), 5000);
-      });
-      
-      // Give the camera some time to adjust
-      await new Promise(r => setTimeout(r, 300));
-      
-      // Capture frame from video
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-      // Convert to JPEG blob
-      const blob = await new Promise(resolve => {
-        canvas.toBlob(resolve, "image/jpeg", 0.9);
-      });
-      
-      if (!blob) {
-        throw new Error("Failed to create image from camera");
+  // Capture and analyze function with improved error handling
+  const captureAndAnalyze = useCallback(
+    async (forceCapture = false) => {
+      // Skip if permissions denied or already capturing
+      if (permissionDenied || isCapturingRef.current) {
+        return;
       }
-      
-      // Create form data to send to API
-      const formData = new FormData();
-      formData.append("file", blob, "emotion-capture.jpg");
-      formData.append("model_name", "VGG19");
-      
-  
-      // Call emotion detection API
-      const response = await axios.post(
-        "https://ukonuzoidx-musemind.hf.space/api/predict-emotion/",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 30000
-        }
-      );
-      
-      // Process response - ACCEPT ALL DETECTIONS regardless of confidence
-      if (response.data?.emotion && response.data?.confidence) {
-        const detectedEmotion = response.data.emotion;
-        const parsedConfidence = parseFloat(
-          response.data.confidence.replace("%", "")
-        );
-        
-        // Format emotion with capitalized first letter
-        const formattedEmotion = 
-          detectedEmotion.charAt(0).toUpperCase() + detectedEmotion.slice(1);
-        
-        // Always update emotion state, even with low confidence
-        setEmotion(formattedEmotion);
-        setConfidence(parsedConfidence);
-        setHasDetected(true);
-        
-        if (parsedConfidence >= 25) {
-          logInfo(`Detected emotion: ${formattedEmotion} (${parsedConfidence}%)`);
-        } else {
-          // Still accept the emotion, just log that it was low confidence
-          logInfo(`Accepted low confidence detection: ${formattedEmotion} (${parsedConfidence}%)`);
-        }
-      } else {
-        logInfo("API returned invalid response format");
-        throw new Error("Invalid emotion response from API");
+
+      // Skip if no user interaction yet
+      if (!userInteracted) {
+        logInfoRef.current("User hasn't interacted yet, can't access camera");
+        return;
       }
-    } catch (err) {
-      logInfo(`Error during emotion detection: ${err.message}`);
-      
-      // Handle permission errors specifically
-      if (err.name === 'NotAllowedError' || err.message.includes('denied') || 
-          err.message.includes('permission')) {
+
+      // Skip if camera API not available
+      if (!isCameraApiAvailable()) {
+        logInfoRef.current("Camera API not available");
         setPermissionDenied(true);
-        setPermissionGranted(false);
+        return;
       }
-      
-      setError(err.message || "Failed to detect emotion");
-      
-      // NO RETRIES - We don't retry on errors anymore
-    } finally {
-      // Always clean up video resources
-      cleanupVideoResources();
-      setLoading(false);
-      isCapturingRef.current = false;
-    }
-  }, [userInteracted, permissionDenied, isCameraApiAvailable, cleanupVideoResources]);
+
+      // Implement rate limiting to prevent spam
+      // FIX: Use the configured delay parameter for rate limiting
+      const now = Date.now();
+      const timeSinceLastCapture = now - lastDetectionTime.current;
+      const minCaptureInterval = Math.min(30000, delay / 2); // Use half the delay or 30 seconds, whichever is less
+
+      // Only allow a capture if it's been long enough since the last one,
+      // or if this is a forced capture
+      if (!forceCapture && timeSinceLastCapture < minCaptureInterval) {
+        logInfoRef.current(
+          `Rate limiting: Not capturing (last capture was ${Math.round(
+            timeSinceLastCapture / 1000
+          )}s ago)`
+        );
+        return;
+      }
+
+      // Mark as capturing to prevent parallel attempts
+      isCapturingRef.current = true;
+      setLoading(true);
+      lastDetectionTime.current = now;
+
+      // Variables to hold resources that need cleanup
+      let stream = null;
+      let video = null;
+      let canvas = null;
+
+      try {
+        logInfoRef.current("Starting emotion capture");
+
+        // Request camera access
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+        });
+
+        // Store the stream for later cleanup
+        activeStreamRef.current = stream;
+        setPermissionGranted(true);
+        setError(null); // Clear any previous errors
+
+        // Create and set up video element
+        video = document.createElement("video");
+        video.setAttribute("playsinline", ""); // Important for iOS
+        video.srcObject = stream;
+        video.style.position = "absolute";
+        video.style.left = "-9999px";
+        document.body.appendChild(video);
+
+        // Wait for the video to be ready
+        // FIX: Improved error handling for video loading
+        await new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            reject(new Error("Video load timeout"));
+          }, 5000);
+
+          video.onloadedmetadata = () => {
+            clearTimeout(timeoutId);
+            video
+              .play()
+              .then(resolve)
+              .catch((error) => {
+                reject(new Error(`Video play failed: ${error.message}`));
+              });
+          };
+
+          video.onerror = (event) => {
+            clearTimeout(timeoutId);
+            reject(
+              new Error(
+                `Video error: ${video.error?.message || "Unknown error"}`
+              )
+            );
+          };
+        });
+
+        // Give the camera some time to adjust
+        await new Promise((r) => setTimeout(r, 300));
+
+        // Create canvas and capture frame
+        canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // FIX: Improved blob creation with proper error handling
+        const blob = await new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            reject(new Error("Canvas blob conversion timeout"));
+          }, 3000);
+
+          canvas.toBlob(
+            (result) => {
+              clearTimeout(timeoutId);
+              if (result) {
+                resolve(result);
+              } else {
+                reject(new Error("Failed to create blob from canvas"));
+              }
+            },
+            "image/jpeg",
+            0.9
+          );
+        });
+
+        // Create form data to send to API
+        const formData = new FormData();
+        formData.append("file", blob, "emotion-capture.jpg");
+        formData.append("model_name", "VGG19");
+
+        // Call emotion detection API
+        // FIX: Added validation for API response
+        try {
+          const response = await axios.post(
+            "https://ukonuzoidx-musemind.hf.space/api/predict-emotion/",
+            formData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+              timeout: 30000,
+            }
+          );
+
+          // Validate the response structure before processing
+          if (!response.data) {
+            throw new Error("API returned empty response");
+          }
+
+          // Process response - ACCEPT ALL DETECTIONS regardless of confidence
+          if (response.data?.emotion && response.data?.confidence) {
+            const detectedEmotion = response.data.emotion;
+
+            // FIX: Better handling of confidence parsing
+            let parsedConfidence = 0;
+            try {
+              if (typeof response.data.confidence === "number") {
+                parsedConfidence = response.data.confidence;
+              } else if (typeof response.data.confidence === "string") {
+                parsedConfidence = parseFloat(
+                  response.data.confidence.replace("%", "")
+                );
+              }
+
+              // Ensure confidence is a valid number
+              if (isNaN(parsedConfidence)) {
+                parsedConfidence = 0;
+                logInfoRef.current("Warning: Could not parse confidence value");
+              }
+            } catch (e) {
+              logInfoRef.current(`Error parsing confidence: ${e.message}`);
+            }
+
+            // Format emotion with capitalized first letter
+            const formattedEmotion =
+              detectedEmotion.charAt(0).toUpperCase() +
+              detectedEmotion.slice(1);
+
+            // Always update emotion state, even with low confidence
+            setEmotion(formattedEmotion);
+            setConfidence(parsedConfidence);
+            setHasDetected(true);
+
+            if (parsedConfidence >= 25) {
+              logInfoRef.current(
+                `Detected emotion: ${formattedEmotion} (${parsedConfidence}%)`
+              );
+            } else {
+              // Still accept the emotion, just log that it was low confidence
+              logInfoRef.current(
+                `Accepted low confidence detection: ${formattedEmotion} (${parsedConfidence}%)`
+              );
+            }
+          } else {
+            throw new Error("Invalid emotion response format from API");
+          }
+        } catch (apiError) {
+          logInfoRef.current(`API error: ${apiError.message}`);
+          throw apiError; // Re-throw to be caught by the outer catch
+        }
+      } catch (err) {
+        logInfoRef.current(`Error during emotion detection: ${err.message}`);
+
+        // Handle permission errors specifically
+        if (
+          err.name === "NotAllowedError" ||
+          err.message.includes("denied") ||
+          err.message.includes("permission")
+        ) {
+          setPermissionDenied(true);
+          setPermissionGranted(false);
+        }
+
+        setError(err.message || "Failed to detect emotion");
+
+        // NO RETRIES - We don't retry on errors anymore
+      } finally {
+        // FIX: Improved cleanup for all resources
+
+        // Clean up canvas resources
+        if (canvas) {
+          canvas.width = 0;
+          canvas.height = 0;
+        }
+
+        // Clean up video element if it wasn't properly added to the DOM
+        if (video && !document.body.contains(video)) {
+          if (video.srcObject) {
+            try {
+              const tracks = video.srcObject.getTracks();
+              tracks.forEach((track) => track.stop());
+            } catch (e) {
+              // Ignore cleanup errors
+              logInfoRef.current(`Error cleaning up video: ${e.message}`);
+            }
+            video.srcObject = null;
+          }
+        }
+
+        // Clean up stream if it wasn't assigned to activeStreamRef
+        if (stream && stream !== activeStreamRef.current) {
+          try {
+            stream.getTracks().forEach((track) => track.stop());
+          } catch (e) {
+            // Ignore cleanup errors
+            logInfoRef.current(`Error cleaning up stream: ${e.message}`);
+          }
+        }
+
+        // Standard cleanup
+        cleanupVideoResources();
+        setLoading(false);
+        isCapturingRef.current = false;
+      }
+    },
+    [
+      userInteracted,
+      permissionDenied,
+      isCameraApiAvailable,
+      cleanupVideoResources,
+      delay,
+    ]
+  );
 
   // Set up and clean up detection interval
+  // FIX: Memoized the interval setup to prevent excessive re-creation
+  const setupDetectionInterval = useCallback(() => {
+    // Clear any existing interval
+    if (detectionInterval.current) {
+      clearInterval(detectionInterval.current);
+      detectionInterval.current = null;
+    }
+
+    logInfoRef.current(`Setting up detection interval every ${delay}ms`);
+
+    // Do an initial capture
+    captureAndAnalyze(true);
+
+    // Set up the interval for future captures
+    detectionInterval.current = setInterval(() => {
+      captureAndAnalyze();
+    }, delay);
+
+    return () => {
+      if (detectionInterval.current) {
+        clearInterval(detectionInterval.current);
+        detectionInterval.current = null;
+      }
+    };
+  }, [captureAndAnalyze, delay]);
+
   useEffect(() => {
     // Only set up the interval if all conditions are met
     if (start && userInteracted && permissionGranted && !permissionDenied) {
-      // Clear any existing interval
-      if (detectionInterval.current) {
-        clearInterval(detectionInterval.current);
-      }
-      
-      logInfo(`Setting up detection interval every ${delay}ms`);
-      
-      // Do an initial capture
-      captureAndAnalyze(true);
-      
-      // Set up the interval for future captures
-      detectionInterval.current = setInterval(() => {
-        captureAndAnalyze();
-      }, delay);
-      
-      // Clean up when component unmounts
-      return () => {
-        if (detectionInterval.current) {
-          clearInterval(detectionInterval.current);
-          detectionInterval.current = null;
-        }
-        cleanupVideoResources();
-      };
+      const cleanup = setupDetectionInterval();
+      return cleanup;
     }
-    
+
     // If we get here and there's an interval running, clean it up
     if (detectionInterval.current) {
       clearInterval(detectionInterval.current);
       detectionInterval.current = null;
     }
   }, [
-    start, 
-    userInteracted, 
-    permissionGranted, 
-    permissionDenied, 
-    captureAndAnalyze, 
-    delay, 
-    cleanupVideoResources
+    start,
+    userInteracted,
+    permissionGranted,
+    permissionDenied,
+    setupDetectionInterval,
   ]);
 
   // Manual trigger function that respects rate limiting
   const triggerDetection = useCallback(() => {
     if (permissionDenied) {
-      logInfo("Cannot trigger detection - permission denied");
-      return;
+      logInfoRef.current("Cannot trigger detection - permission denied");
+      return false;
     }
-    
+
     if (!userInteracted) {
-      logInfo("Cannot trigger detection - user hasn't interacted");
-      return;
+      logInfoRef.current("Cannot trigger detection - user hasn't interacted");
+      return false;
     }
-    
+
     if (isCapturingRef.current) {
-      logInfo("Already capturing, ignoring manual trigger");
-      return;
+      logInfoRef.current("Already capturing, ignoring manual trigger");
+      return false;
     }
-    
+
+    // Try to recheck permission if we haven't detected yet
+    if (!permissionGranted && !hasDetected) {
+      checkCameraPermission(true);
+    }
+
     captureAndAnalyze(true);
-  }, [permissionDenied, userInteracted, captureAndAnalyze]);
+    return true;
+  }, [
+    permissionDenied,
+    userInteracted,
+    permissionGranted,
+    hasDetected,
+    captureAndAnalyze,
+    checkCameraPermission,
+  ]);
 
   // On unmount cleanup
   useEffect(() => {
     return () => {
       if (detectionInterval.current) {
         clearInterval(detectionInterval.current);
+        detectionInterval.current = null;
       }
       cleanupVideoResources();
     };
@@ -765,7 +913,10 @@ const useEmotionDetection = (start = true, delay = 60000) => { // 60 second dela
     error,
     confidence,
     hasDetected,
-    triggerDetection
+    triggerDetection,
+    // Added additional functions for more control
+    recheckPermission: () => checkCameraPermission(true),
+    resetError: () => setError(null),
   };
 };
 
