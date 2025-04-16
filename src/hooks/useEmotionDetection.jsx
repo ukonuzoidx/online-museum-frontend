@@ -404,7 +404,8 @@
 // };
 
 // export default useEmotionDetection;
-// Final Fixed useEmotionDetection.js - Prevents webcam spam and accepts low confidence
+
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 

@@ -264,7 +264,7 @@ const AdaptiveSoundscapeSystem = ({
     )}%)`;
 
     // Ignore low confidence detections
-    if (parsedConfidence < 30) {
+    if (parsedConfidence < 25) {
       logEvent(
         "Low confidence detection ignored",
         `${parsedConfidence}% for ${detectedEmotion}`
