@@ -386,7 +386,7 @@ function App() {
     confidence,
     hasDetected,
     triggerDetection,
-  } = useEmotionDetection(true, 10000); // Poll every 10 seconds instead of 15
+  } = useEmotionDetection(true, 20000); // Poll every 20 seconds 
 
   // Handle room transitions
   const handleRoomChange = (newRoom) => {
@@ -461,15 +461,15 @@ function App() {
     }
   }, [isEntered]);
 
-  // IMPROVED: Trigger emotion detection when room changes
-  useEffect(() => {
-    if (isInsideMuseum && permissionGranted && !emotionLoading) {
-      console.log(
-        `Room changed to ${currentRoom}, triggering emotion detection...`
-      );
-      triggerDetection();
-    }
-  }, [currentRoom, isInsideMuseum, permissionGranted, emotionLoading]);
+  // // IMPROVED: Trigger emotion detection when room changes
+  // useEffect(() => {
+  //   if (isInsideMuseum && permissionGranted && !emotionLoading) {
+  //     console.log(
+  //       `Room changed to ${currentRoom}, triggering emotion detection...`
+  //     );
+  //     triggerDetection();
+  //   }
+  // }, [currentRoom, isInsideMuseum, permissionGranted, emotionLoading]);
 
   const handleStartRecording = () => {
     console.log("Starting emotion recording...");

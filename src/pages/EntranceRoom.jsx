@@ -19,7 +19,6 @@ import marbleTexture from "../assets/textures/marble.jpg";
 import MusicPlayer from "../widgets/MusicPlayer";
 import woodTexture from "../assets/textures/wood.jpg";
 import leatherTexture from "../assets/textures/leather.jpg";
-import useEmotionDetection from "../hooks/useEmotionDetection";
 import EmotionMusicPanel from "../components/EmotionMusicPanel";
 
 const EntranceRoom = ({ onDoorClick, onExitClick }) => {

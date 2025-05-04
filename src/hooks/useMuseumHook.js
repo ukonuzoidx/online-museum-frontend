@@ -70,7 +70,6 @@ async function isImageOk(url) {
         return false;
     }
 }
-
 const fetchArtworksForDepartment = async (
     departmentId,
     query,
@@ -94,7 +93,6 @@ const fetchArtworksForDepartment = async (
     if (!searchData.objectIDs || searchData.objectIDs.length === 0) {
         return [];
     }
-
     // 2. Limit how many objectIDs we want
     const objectIDs = searchData.objectIDs.slice(0, limit);
 
@@ -124,8 +122,6 @@ const fetchArtworksForDepartment = async (
     const details = await Promise.all(detailPromises);
     return details.filter(Boolean);
 };
-
-
 
 export default fetchArtworksForDepartment;
 
