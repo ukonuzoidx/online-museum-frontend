@@ -1,5 +1,17 @@
+// Import necessary libraries and components
+import React from "react";
+import { Text } from "@react-three/drei";
+import EntranceRoom from "./EntranceRoom";
+import GalleryRoom1 from "../pages/GalleryRoom1";
+import GalleryRoom2 from "../pages/GalleryRoom2";
+import GalleryRoom3 from "./GalleryRoom3";
+import Restroom from "./RestRoom";
+import WelcomeScreen from "./WelcomeScreen";
+import useMetMuseumArtworks from "../hooks/useMuseumHook";
+
 function MuseumEnvironment({ currentRoom, onDoorClick, galleryArtworks }) {
-  // No need to fetch artworks here anymore, as they are passed as props
+  // No need to fetch artworks here anymore as it's done in the App.jsx file for faster loading
+  
   // Function to map room name to its component
   const renderRoom = () => {
     switch (currentRoom) {
@@ -18,7 +30,7 @@ function MuseumEnvironment({ currentRoom, onDoorClick, galleryArtworks }) {
     }
   };
 
-  // Render the current room based on the currentRoom prop
+  // Render the room based on the current room state
   return (
     <>
       <ambientLight intensity={0.5} />
