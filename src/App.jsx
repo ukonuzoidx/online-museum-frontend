@@ -19,7 +19,7 @@ import AdaptiveSoundscapeSystem from "./components/AdaptiveSoundscapeSystem";
 import MobileControls from "./widgets/MobileControls";
 import MobileJoystickOverlay from "./utils/MobileControlOverlay";
 import WebcamPermissionNotice from "./widgets/WebPermissionNotice";
-import ExpressionRecorderOverlay from "./utils/EmotionOverlay";
+// import ExpressionRecorderOverlay from "./utils/EmotionOverlay";
 import RecordingIndicator from "./utils/RecordingIndicator";
 import fetchArtworksForDepartment from "./hooks/useMuseumHook";
 
