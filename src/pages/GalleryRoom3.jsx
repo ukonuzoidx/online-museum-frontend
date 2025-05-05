@@ -11,7 +11,6 @@ import useMetMuseumArtworks from "../hooks/useMuseumHook";
 import loadingGif from "../assets/loading.gif";
 import ClassicalArtwork from "../components/ClassicFrame";
 
-
 function GalleryRoom3({ onDoorClick, artworks, loading }) {
   // References for lighting and animations
   const ambientLightRef = useRef();
@@ -412,31 +411,31 @@ function GalleryRoom3({ onDoorClick, artworks, loading }) {
 
       {/* Enhanced ambient lighting for brighter room */}
       <ambientLight intensity={0.7} color="#FFF5E1" />
-      <Suspense fallback={null}>
-      {paintings.map((painting, i) => {
-        const art = validArtworks[i];
 
-        return (
-          <ClassicalArtwork
-            key={painting.id}
-            position={painting.position}
-            rotation={painting.rotation}
-            size={painting.size}
-            title={art?.title || "No title"}
-            department={art?.department || "Unknown Department"}
-            artist={art?.artistDisplayName || "Unknown Artist"}
-            dimensions={art?.dimensions || "Unknown Dimensions"}
-            medium={art?.medium || "Unknown Medium"}
-            objectURL={art?.objectURL}
-            imageURL={art?.primaryImage}
-          />
-        );
-      })}
-      </Suspense>
       {/* Display all paintings */}
+      <Suspense fallback={null}>
+        {paintings.map((painting, i) => {
+          const art = validArtworks[i];
+
+          return (
+            <ClassicalArtwork
+              key={painting.id}
+              position={painting.position}
+              rotation={painting.rotation}
+              size={painting.size}
+              title={art?.title || "No title"}
+              department={art?.department || "Unknown Department"}
+              artist={art?.artistDisplayName || "Unknown Artist"}
+              dimensions={art?.dimensions || "Unknown Dimensions"}
+              medium={art?.medium || "Unknown Medium"}
+              objectURL={art?.objectURL}
+              imageURL={art?.primaryImage}
+            />
+          );
+        })}
+      </Suspense>
 
       {/* Doors */}
-
       {/* Door to Gallery 2 */}
       <Door
         position={[-5, 1.533, 9.9]}

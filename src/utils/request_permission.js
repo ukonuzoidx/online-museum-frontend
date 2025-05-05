@@ -1,4 +1,4 @@
-// utils/webcamPermissions.js
+// This file contains functions to request permissions for various features
 export const requestWebcamPermission = async () => {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });

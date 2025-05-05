@@ -24,6 +24,7 @@ function WebcamCapture({ onFramesCaptured }) {
     onFramesCaptured(frames);
   };
 
+  // Cleanup function to stop capturing if the component unmounts
   return (
     <div>
       <Webcam

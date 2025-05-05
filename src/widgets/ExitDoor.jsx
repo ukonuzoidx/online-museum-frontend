@@ -1,4 +1,4 @@
-// components/ExitDoor.js
+// ExitDoor component for the museum scene in a React Three Fiber application.
 import React, { useState, useRef } from "react";
 import { Html, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";

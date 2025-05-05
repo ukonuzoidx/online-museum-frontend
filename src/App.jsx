@@ -1,241 +1,7 @@
-// // App.js
-// import React, { useState, Suspense, useEffect, useMemo } from "react";
-// import { Canvas } from "@react-three/fiber";
-// import { Physics } from "@react-three/cannon";
-// import "./App.css";
-// import WelcomeScreen from "./pages/WelcomeScreen";
-// import FirstPersonControls from "./widgets/FirstPersonControls";
-// import MuseumEnvironment from "./pages/MuseumEnvironment";
-// import useEmotionDetection from "./hooks/useEmotionDetection";
-// import {
-//   createJoystickRefs,
-//   createMovementHandlers,
-//   createLookHandlers,
-// } from "./utils/joystickUtils";
-// import AdaptiveSoundscapeSystem from "./components/AdaptiveSoundscapeSystem";
-// import MobileControls from "./widgets/MobileControls";
-// import MobileJoystickOverlay from "./utils/MobileControlOverlay";
-// import WebcamPermissionNotice from "./widgets/WebPermissionNotice";
-// import ExpressionRecorderOverlay from "./utils/EmotionOverlay";
+//Main application component for the museum experience, integrating various features and components.
+// This component manages the state of the application, including room transitions, emotion detection, and user interactions.
 
-// // Loading Screen
-// function LoadingScreen() {
-//   return (
-//     <div className="loading-screen">
-//       <div className="loading-spinner"></div>
-//       <p>Loading Museum Environment...</p>
-//     </div>
-//   );
-// }
-
-// // Transition Effect
-// function RoomTransition({ isTransitioning }) {
-//   return (
-//     <div className={`room-transition ${isTransitioning ? "active" : ""}`}></div>
-//   );
-// }
-
-// // Main App
-// function App() {
-//   // App state
-//   const [isEntered, setIsEntered] = useState(false);
-//   const [currentRoom, setCurrentRoom] = useState("Entrance");
-//   const [isInsideMuseum, setIsInsideMuseum] = useState(false);
-//   const [isTransitioning, setIsTransitioning] = useState(false);
-//   const [isLoading, setIsLoading] = useState(true);
-//   const [movementMode, setMovementMode] = useState(null); // "desktop" | "mobile"
-//   const [showMovementSelection, setShowMovementSelection] = useState(false);
-//   const [showRecorder, setShowRecorder] = useState(false);
-
-//   // Create joystick refs and handlers
-//   const { moveRef, lookRef } = useMemo(() => createJoystickRefs(), []);
-//   const movementHandlers = useMemo(
-//     () => createMovementHandlers(moveRef),
-//     [moveRef]
-//   );
-//   const lookHandlers = useMemo(() => createLookHandlers(lookRef), [lookRef]);
-
-//   // Detect if the device is likely mobile
-//   useEffect(() => {
-//     const detectMobile = () => {
-//       return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-//         navigator.userAgent
-//       );
-//     };
-
-//     // Auto-select mobile controls on mobile devices
-//     if (isEntered && showMovementSelection) {
-//       if (detectMobile()) {
-//         setMovementMode("mobile");
-//         setShowMovementSelection(false);
-//       }
-//     }
-//   }, [isEntered, showMovementSelection]);
-
-//   // Emotion detection hook (polling every 15 seconds)
-//   const { emotion, loading, permissionGranted, confidence, hasDetected, triggerDetection } = useEmotionDetection(true, 15000);
-
-//   // Handle room transitions
-//   const handleRoomChange = (newRoom) => {
-//     if (newRoom === "WelcomeScreen") {
-//       setIsEntered(false);
-//       setIsInsideMuseum(false);
-//       setTimeout(() => {
-//         setIsEntered(false);
-//         setCurrentRoom("Entrance"); // Reset to entrance for next time
-//       }, 2000); // 2 seconds exit transition
-//     } else {
-//       setIsTransitioning(true);
-//       setIsInsideMuseum(true);
-//       setTimeout(() => {
-//         setCurrentRoom(newRoom);
-//         setTimeout(() => {
-//           setIsTransitioning(false);
-//         }, 500);
-//       }, 800);
-//     }
-//   };
-
-//   // Start experience when entering museum
-//   const handleEnterMuseum = () => {
-//     setIsEntered(true);
-//     setIsInsideMuseum(true);
-//     setShowMovementSelection(true);
-//     // setShowRecorder(true);
-//   };
-
-//   // emotion overlay
-//   const handleStartRecording = () => {
-//     setShowRecorder(true);
-//     triggerDetection();
-//   };
-
-//   const handleCancelRecording = () => {
-//     setShowRecorder(false);
-//   };
-
-//   const handleCompleteRecording = () => {
-//     setShowRecorder(false);
-//     triggerDetection(); // only start capture after countdown
-//   };
-
-//   // Simulate initial loading
-//   useEffect(() => {
-//     if (isEntered) {
-//       setTimeout(() => {
-//         setIsLoading(false);
-//       }, 2000);
-//     }
-//   }, [isEntered]);
-
-//   return (
-//     <div className="App">
-//       {!isEntered ? (
-//         <WelcomeScreen onEnter={handleEnterMuseum} />
-//       ) : (
-//         <>
-//           {isLoading ? (
-//             <LoadingScreen />
-//           ) : (
-//             <>
-//               {showMovementSelection && (
-//                 <div className="movement-selection-modal">
-//                   <h2>Select Movement Mode</h2>
-//                   <button
-//                     onClick={() => {
-//                       setMovementMode("desktop");
-//                       setShowMovementSelection(false);
-//                     }}
-//                   >
-//                     🖥️ Desktop (WASD + Mouse)
-//                   </button>
-//                   <button
-//                     onClick={() => {
-//                       setMovementMode("mobile");
-//                       setShowMovementSelection(false);
-//                     }}
-//                   >
-//                     📱 Mobile (Touch Controls)
-//                   </button>
-//                 </div>
-//               )}
-
-//               <Canvas shadows camera={{ position: [0, 1.6, 5], fov: 70 }}>
-//                 <Physics gravity={[0, -9.8, 0]}>
-//                   <Suspense fallback={null}>
-//                     <MuseumEnvironment
-//                       currentRoom={currentRoom}
-//                       onDoorClick={handleRoomChange}
-//                     />
-//                     {movementMode === "desktop" && (
-//                       <FirstPersonControls currentRoom={currentRoom} />
-//                     )}
-
-//                     {movementMode === "mobile" && (
-//                       <MobileControls
-//                         currentRoom={currentRoom}
-//                         moveRef={moveRef}
-//                         lookRef={lookRef}
-//                       />
-//                     )}
-//                   </Suspense>
-//                 </Physics>
-//               </Canvas>
-
-//               {/* Integrated Adaptive Soundscape System */}
-//               {isInsideMuseum && (
-//                 <>
-//                   <WebcamPermissionNotice
-//                     permissionGranted={handleStartRecording}
-//                   />
-//                   <AdaptiveSoundscapeSystem
-//                     detectedEmotion={hasDetected ? emotion : "Neutral"}
-//                     detectionConfidence={confidence}
-//                     currentRoom={currentRoom}
-//                     isEnabled={true}
-//                     permissionGranted={permissionGranted}
-//                   />
-//                 </>
-//               )}
-//               {showRecorder && (
-//                 <ExpressionRecorderOverlay
-//                   onComplete={handleCompleteRecording}
-//                   onCancel={handleCancelRecording}
-//                 />
-//               )}
-
-//               {movementMode === "mobile" && (
-//                 <MobileJoystickOverlay
-//                   onMoveStart={movementHandlers.onMoveStart}
-//                   onMove={movementHandlers.onMove}
-//                   onMoveEnd={movementHandlers.onMoveEnd}
-//                   onLookStart={lookHandlers.onLookStart}
-//                   onLook={lookHandlers.onLook}
-//                   onLookEnd={lookHandlers.onLookEnd}
-//                 />
-//               )}
-
-//               <div className="controls-help">
-//                 {movementMode === "desktop" ? (
-//                   <p>
-//                     Move: WASD | Look: Mouse | Click canvas to enable controls
-//                   </p>
-//                 ) : (
-//                   <p>Left joystick: Move | Right joystick: Look</p>
-//                 )}
-//               </div>
-//               <RoomTransition isTransitioning={isTransitioning} />
-//             </>
-//           )}
-//         </>
-//       )}
-//     </div>
-//   );
-// }
-
-// export default App;
-
-// App.js (Updated with enhanced emotion detection)
+// import necessary libraries and components
 import React, { useState, Suspense, useEffect, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/cannon";
@@ -274,9 +40,9 @@ function RoomTransition({ isTransitioning }) {
   );
 }
 
-// Main App
+// Main App function
 function App() {
-  // App state
+  // App states
   const [isEntered, setIsEntered] = useState(false);
   const [currentRoom, setCurrentRoom] = useState("Entrance");
   const [isInsideMuseum, setIsInsideMuseum] = useState(false);
@@ -293,6 +59,7 @@ function App() {
     [moveRef]
   );
   const lookHandlers = useMemo(() => createLookHandlers(lookRef), [lookRef]);
+
   // Artwork state for all galleries
   const [galleryArtworks, setGalleryArtworks] = useState({
     gallery1: [],
@@ -360,8 +127,7 @@ function App() {
     }
   }, [isEntered, isLoading]);
 
-
-  // Detect if the device is likely mobile
+  // Detect if the device is likely mobile and auto-select mobile controls
   useEffect(() => {
     const detectMobile = () => {
       return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -378,7 +144,7 @@ function App() {
     }
   }, [isEntered, showMovementSelection]);
 
-  // IMPROVED: Emotion detection hook with more frequent polling (every 10 seconds)
+  // Emotion detection hook with more frequent polling (every 10 seconds)
   const {
     emotion,
     loading: emotionLoading,
@@ -386,7 +152,7 @@ function App() {
     confidence,
     hasDetected,
     triggerDetection,
-  } = useEmotionDetection(true, 20000); // Poll every 20 seconds 
+  } = useEmotionDetection(true, 20000); // Poll every 20 seconds
 
   // Handle room transitions
   const handleRoomChange = (newRoom) => {
@@ -415,7 +181,7 @@ function App() {
     setIsInsideMuseum(true);
     setShowMovementSelection(true);
 
-    // IMPROVED: Immediately request webcam permission on enter
+    // Immediately request webcam permission on enter
     setTimeout(() => {
       handleStartRecording();
     }, 1000);
@@ -431,11 +197,11 @@ function App() {
     setShowRecorder(false);
     triggerDetection(); // Start capture after countdown
 
-    // IMPROVED: Set up periodic emotion detection reminders
+    // Set up periodic emotion detection reminders
     setupEmotionReminders();
   };
 
-  // IMPROVED: Setup periodic emotion detection reminders
+  // Setup periodic emotion detection reminders
   const setupEmotionReminders = () => {
     // Remind user to refresh emotion detection every 2 minutes
     const reminderInterval = setInterval(() => {
@@ -461,16 +227,7 @@ function App() {
     }
   }, [isEntered]);
 
-  // // IMPROVED: Trigger emotion detection when room changes
-  // useEffect(() => {
-  //   if (isInsideMuseum && permissionGranted && !emotionLoading) {
-  //     console.log(
-  //       `Room changed to ${currentRoom}, triggering emotion detection...`
-  //     );
-  //     triggerDetection();
-  //   }
-  // }, [currentRoom, isInsideMuseum, permissionGranted, emotionLoading]);
-
+  // Request webcam permission and start emotion detection
   const handleStartRecording = () => {
     console.log("Starting emotion recording...");
     setShowRecorder(true);
@@ -492,6 +249,17 @@ function App() {
     }
   };
 
+  /**
+   *  The main render function of the App component.
+   *  It conditionally renders the welcome screen, loading screen, museum environment,
+   *  movement selection modal, webcam permission notice, adaptive soundscape system,
+   *  and emotion status based on the current state of the application.
+   * It also handles the room transitions and user interactions.
+   *  The render function is responsible for displaying the entire user interface
+   *  and managing the flow of the application.
+   *  @returns {JSX.Element} The rendered UI of the museum experience application.
+   *
+   */
   return (
     <div className="App">
       {!isEntered ? (
@@ -524,6 +292,7 @@ function App() {
                 </div>
               )}
 
+              {/* Museum Environment */}
               <Canvas shadows camera={{ position: [0, 1.6, 5], fov: 70 }}>
                 <Physics gravity={[0, -9.8, 0]}>
                   <Suspense fallback={null}>
@@ -547,23 +316,6 @@ function App() {
                 </Physics>
               </Canvas>
 
-              {/* IMPROVED: Enhanced Webcam Permission Notice - more visible */}
-              {/* {isInsideMuseum && !permissionGranted && (
-                <div className="webcam-permission-notice-enhanced">
-                  <h3>📸 Enable Camera for Full Experience</h3>
-                  <p>
-                    Our museum adapts music based on your emotions. To
-                    experience this feature, please allow camera access.
-                  </p>
-                  <button
-                    className="permission-button"
-                    onClick={handleStartRecording}
-                  >
-                    Enable Emotion Detection
-                  </button>
-                </div>
-              )} */}
-
               {/* Integrated Adaptive Soundscape System */}
               {isInsideMuseum && (
                 <>
@@ -578,7 +330,7 @@ function App() {
                     permissionGranted={permissionGranted}
                   />
 
-                  {/* IMPROVED: Emotion Detection Status */}
+                  {/* Emotion Detection Status */}
                   {permissionGranted && (
                     <div className="emotion-status">
                       <div
@@ -598,6 +350,7 @@ function App() {
                       </button>
                     </div>
                   )}
+                  {/* Emotion Recorder Overlay */}
                   <RecordingIndicator
                     isRecording={emotionLoading}
                     onRequestRecording={handleStartRecording}
@@ -614,6 +367,7 @@ function App() {
                 />
               )} */}
 
+              {/* Mobile Joystick Overlay */}
               {movementMode === "mobile" && (
                 <MobileJoystickOverlay
                   onMoveStart={movementHandlers.onMoveStart}
@@ -624,7 +378,7 @@ function App() {
                   onLookEnd={lookHandlers.onLookEnd}
                 />
               )}
-
+              {/* Controls Help */}
               <div className="controls-help">
                 {movementMode === "desktop" ? (
                   <p>
@@ -634,6 +388,7 @@ function App() {
                   <p>Left joystick: Move | Right joystick: Look</p>
                 )}
               </div>
+              {/* Room Transition Effect */}
               <RoomTransition isTransitioning={isTransitioning} />
             </>
           )}

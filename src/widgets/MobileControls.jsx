@@ -2,6 +2,15 @@ import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
+/**
+ * MobileControls Component
+ * 
+ * A React component that implements the camera controls for mobile devices in a Three.js scene
+ * using the PointerLockControls for rotation and touch pad input for movement.
+ * Includes collision detection to prevent moving through objects in the scene.
+ * 
+ * @returns {null} - This component doesn't render any visible elements as it only manages camera controls.
+ */
 function MobileControls({ currentRoom, moveRef, lookRef }) {
   const { camera, gl, scene } = useThree();
   const playerHeight = 1.6;

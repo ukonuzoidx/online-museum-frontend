@@ -33,11 +33,13 @@ const RecordingIndicator = ({ isRecording, onRequestRecording }) => {
   }, [isRecording]);
 
   return (
+    // Recording indicator with a dot and text
     <div
-      className={`recording-indicator ${expanded ? "expanded" : ""} ${
-        isRecording ? "active" : "inactive"
-      }`}
+    className={`recording-indicator ${expanded ? "expanded" : ""} ${
+      isRecording ? "active" : "inactive"
+    }`}
     >
+      {/* Clicking the indicator toggles expanded state */}
       <div className="indicator-dot"></div>
 
       {expanded && (
@@ -65,6 +67,7 @@ const RecordingIndicator = ({ isRecording, onRequestRecording }) => {
         </div>
       )}
 
+      {/* UI to let you know when the facial capturing starts */}
       {showInfo && (
         <div className="recording-info-popup">
           <h4>About Facial Recording</h4>

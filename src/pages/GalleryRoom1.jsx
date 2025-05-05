@@ -102,7 +102,7 @@ function GalleryRoom1({ onDoorClick, artworks, loading }) {
   ];
 
   // console.log(exhibits.length);
-
+// would load Artwork from the APp.jsx file instead of here because of the long loading time
   // const { artworks, loading } = useMetMuseumArtworks(
   //   11,
   //   "painting",
@@ -153,21 +153,7 @@ function GalleryRoom1({ onDoorClick, artworks, loading }) {
           />
         </Box>
 
-        {/* Light beam effect */}
-        {/* <mesh
-          ref={lightBeamRef}
-          position={[0, -5, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry args={[3.5, 3.5, 10, 16, 1, true]} />
-          <meshBasicMaterial
-            color="#FFFFFF"
-            transparent
-            opacity={0.1}
-            side={DoubleSide}
-          />
-        </mesh> */}
-      </group>
+         </group>
 
       {/* Elegant crown molding where walls meet ceiling */}
       {[
@@ -218,23 +204,7 @@ function GalleryRoom1({ onDoorClick, artworks, loading }) {
       </Box>
 
       {/* Display Art Exhibits */}
-      {/* {
-        artworks.map((ex, i) => {
-          // Get the i-th artwork
-          const art = artworks[i];
-          return (
-            <ArtFrame
-              key={art.objectID}
-              position={ex.position}
-              rotation={ex.rotation}
-              size={ex.size}
-              // Pass the entire Met object so ArtFrame can read the title, image, etc.
-              artwork={art}
-            />
-          );
-        })
-      } */}
-
+      {/* Use custom ArtFrame component to display the artworks */}
       <Suspense fallback={null}>
         {exhibits.map((ex, i) => {
           const art = validArtworks[i];

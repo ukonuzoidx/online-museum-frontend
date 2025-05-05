@@ -37,6 +37,8 @@ const WebcamPermissionNotice = ({ onPermissionGranted }) => {
 
   if (!showNotice) return null;
 
+  // Show notice if permission is not granted
+  // and user has not interacted with the page yet
   return (
     <div style={styles.container}>
       <p style={styles.message}>

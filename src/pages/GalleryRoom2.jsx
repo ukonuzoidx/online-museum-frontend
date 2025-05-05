@@ -479,6 +479,7 @@ function GalleryRoom2({ onDoorClick, artworks, loading }) {
           />
         </Cylinder>
 
+        
         {Array.from({ length: 8 }).map((_, i) => {
           const angle = (i / 8) * Math.PI * 2;
           const x = Math.cos(angle) * 1.2;
@@ -642,10 +643,11 @@ function GalleryRoom2({ onDoorClick, artworks, loading }) {
           />
         </Box>
       </group>
+      {/* Display Cases for Collections */}
       <Suspense fallback={null}>
         {collections.map((item, i) => {
           const art = validArtworks[i];
-  
+
           return (
             <DisplayCase
               key={item.id}
@@ -658,25 +660,12 @@ function GalleryRoom2({ onDoorClick, artworks, loading }) {
               medium={art?.medium || "Unknown Medium"}
               objectURL={art?.objectURL}
               // artifactType={item.artifactType}
-              // imageUrl={art?.primaryImage} 
+              // imageUrl={art?.primaryImage}
               artwork={art}
             />
           );
         })}
       </Suspense>
-
-
-      {/* Display Cases for Collections */}
-      {/* {collections.map((collection) => (
-        <DisplayCase
-          key={collection.id}
-          position={collection.position}
-          size={collection.size}
-          title={collection.title}
-          description={collection.description}
-          artifactType={collection.artifactType}
-        />
-      ))} */}
 
       {/* Door to Gallery 1 */}
       <Door

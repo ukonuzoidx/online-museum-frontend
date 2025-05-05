@@ -1,31 +1,3 @@
-// import React, { useState } from "react";
-// import { Html } from "@react-three/drei";
-
-// // Door Component to transition between rooms
-// function Door({ position, rotation, targetRoom, onDoorClick }) {
-//   const [hovered, setHovered] = useState(false);
-
-//   return (
-//     <group position={position} rotation={rotation}>
-//       <mesh
-//         onPointerOver={() => setHovered(true)}
-//         onPointerOut={() => setHovered(false)}
-//         onClick={() => onDoorClick(targetRoom)}
-//       >
-//         <boxGeometry args={[1.5, 2.5, 0.1]} />
-//         <meshStandardMaterial color={hovered ? "#8B4513" : "#654321"} />
-//       </mesh>
-//       {hovered && (
-//         <Html position={[0, 0, 0.1]}>
-//           <div className="door-label">Enter {targetRoom}</div>
-//         </Html>
-//       )}
-//     </group>
-//   );
-// }
-
-// export default Door;
-
 import React, { useState, useRef } from "react";
 import { Html, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
