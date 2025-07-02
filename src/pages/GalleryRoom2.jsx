@@ -677,16 +677,16 @@ function GalleryRoom2({ onDoorClick, artworks, loading }) {
 
       {/* Door to Gallery 3 */}
       <Door
-        position={[5, 1.25, -9.9]}
-        rotation={[0, 0, 0]}
+        position={[9.9, 1.25, -6]}
+        rotation={[0, -Math.PI / 2, 0]}
         targetRoom="Gallery 3"
         onDoorClick={onDoorClick}
       />
 
       {/* Door to Restrooms */}
-      <Door
-        position={[9.9, 1.25, 8]}
-        rotation={[0, -Math.PI / 2, 0]}
+      <Door-Math.PI / 2
+        position={[7, 1.25, 10]}
+        rotation={[0, 0, 0]}
         targetRoom="Restrooms"
         onDoorClick={onDoorClick}
       />
