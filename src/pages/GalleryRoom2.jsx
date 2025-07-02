@@ -684,7 +684,7 @@ function GalleryRoom2({ onDoorClick, artworks, loading }) {
       />
 
       {/* Door to Restrooms */}
-      <Door-Math.PI / 2
+      <Door
         position={[7, 1.25, 10]}
         rotation={[0, 0, 0]}
         targetRoom="Restrooms"
