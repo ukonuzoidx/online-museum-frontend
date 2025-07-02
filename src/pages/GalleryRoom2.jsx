@@ -647,7 +647,6 @@ function GalleryRoom2({ onDoorClick, artworks, loading }) {
       <Suspense fallback={null}>
         {collections.map((item, i) => {
           const art = validArtworks[i];
-
           return (
             <DisplayCase
               key={item.id}
