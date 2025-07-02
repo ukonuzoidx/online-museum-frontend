@@ -119,6 +119,9 @@ function GalleryRoom1({ onDoorClick, artworks, loading }) {
 
   const validArtworks = artworks.slice(0, exhibits.length);
 
+  const exhibitsToRender = exhibits.slice(0, validArtworks.length);
+
+
   return (
     <group>
       {/* Polished marble floor - brightened */}
@@ -206,7 +209,7 @@ function GalleryRoom1({ onDoorClick, artworks, loading }) {
       {/* Display Art Exhibits */}
       {/* Use custom ArtFrame component to display the artworks */}
       <Suspense fallback={null}>
-        {exhibits.map((ex, i) => {
+        {exhibitsToRender.map((ex, i) => {
           const art = validArtworks[i];
           if (!art) return null;
 

@@ -80,20 +80,22 @@ function App() {
           const gallery1Promise = fetchArtworksForDepartment(
             11,
             "Paintings",
-            25
+            15,
+            
           );
           const gallery2Promise = fetchArtworksForDepartment(
-            5,
-            "Sculpture",
-            65,
-            true
+            10,
+            "Egyptian Art",
+            20,
+            
           );
           const gallery3Promise = fetchArtworksForDepartment(
             6,
             "Portrait",
             20,
-            true
+            
           );
+  
 
           // Wait for all promises to resolve
           const [gallery1Data, gallery2Data, gallery3Data] = await Promise.all([

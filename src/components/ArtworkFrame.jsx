@@ -37,10 +37,7 @@ const ArtFrame = ({
       {/* Artwork Frame */}
       <group
         onPointerOver={() => setHovered(true)}
-        onPointerOut={() => {
-          setHovered(false);
-          setClicked(false);
-        }}
+        onPointerOut={() => setHovered(false)}
         onClick={() => setClicked(!clicked)}
       >
         {/* Ornate frame */}
@@ -124,11 +121,7 @@ const ArtFrame = ({
 
         {/* Title plaque */}
 
-        
-        <Box
-          args={[1.4, 0.3, 0.02]} 
-          position={[0, -size[1] / 2 - 0.2, 0.05]}
-        >
+        <Box args={[1.4, 0.3, 0.02]} position={[0, -size[1] / 2 - 0.2, 0.05]}>
           <meshStandardMaterial
             color="#B8860B"
             metalness={0.7}
